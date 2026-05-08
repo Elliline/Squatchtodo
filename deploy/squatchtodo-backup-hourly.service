@@ -1,0 +1,39 @@
+[Unit]
+Description=SquatchTodo hourly snapshot
+Documentation=file:///opt/squatchtodo/deploy/backup-hourly.sh
+# Don't race the main service starting up.
+After=squatchtodo.service
+
+[Service]
+Type=oneshot
+User=squatchtodo
+Group=squatchtodo
+ExecStart=/opt/squatchtodo/deploy/backup-hourly.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=squatchtodo-backup
+
+# Same hardening shape as the main unit, scoped down to read-only-everything
+# except the data directory (snapshots live there too).
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+PrivateUsers=yes
+CapabilityBoundingSet=
+ReadWritePaths=/var/lib/squatchtodo

@@ -1,0 +1,38 @@
+[Unit]
+Description=SquatchTodo daily NAS sync
+Documentation=file:///opt/squatchtodo/deploy/backup-daily.sh
+After=network-online.target squatchtodo-backup-hourly.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=squatchtodo
+Group=squatchtodo
+ExecStart=/opt/squatchtodo/deploy/backup-daily.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=squatchtodo-backup
+
+# Looser sandbox than the local snapshot job — rsync needs network and
+# (depending on $NAS_TARGET) may need to read from the user's SSH keys.
+# We still keep ProtectSystem=strict and ReadWritePaths empty (rsync only
+# reads the snapshot dir + writes over the network).
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=
+# If NAS_TARGET is a local mount point, list it here too via a drop-in.
+ReadWritePaths=/var/lib/squatchtodo

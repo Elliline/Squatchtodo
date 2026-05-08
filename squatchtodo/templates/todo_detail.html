@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% import "partials/_macros.html" as m %}
+{% block title %}{{ todo.title }} · SquatchTodo{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="/">projects</a> /
+  <a href="/projects/{{ project.id }}">{{ project.name }}</a> /
+  {% if parent %}<a href="/todos/{{ parent.id }}">{{ parent.title }}</a> /{% endif %}
+  <span class="bright">{{ todo.title }}</span>
+</div>
+
+<div class="entity-header">
+  <div class="title">{{ todo.title }} {{ m.bot_tag(todo.created_by, human_identity) }}</div>
+  <div class="meta">
+    {{ m.todo_status(todo.status) }}
+    {{ m.todo_priority(todo.priority) }}
+    <span class="kv"><span class="k">created</span><span class="v">{{ todo.created_at[:10] }}</span></span>
+    <span class="kv"><span class="k">by</span><span class="v">{{ todo.created_by }}</span></span>
+    {% if todo.completed_at %}
+      <span class="kv"><span class="k">done</span><span class="v">{{ todo.completed_at[:10] }}</span></span>
+    {% endif %}
+  </div>
+  <div class="description {% if not todo.description %}empty{% endif %}">
+    {%- if todo.description -%}{{ todo.description }}{%- else -%}no description{%- endif -%}
+  </div>
+
+  <form method="post" action="/web/todos/{{ todo.id }}/edit" class="inline stack" style="margin-top:8px">
+    <div class="row-actions" style="gap:8px">
+      <span class="kv"><span class="k">status</span></span>
+      <select name="status">
+        {% for s in ['open','in_progress','blocked','done','archived'] %}
+          <option value="{{ s }}" {% if todo.status == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <span class="kv"><span class="k">priority</span></span>
+      <select name="priority">
+        {% for p in ['low','medium','high','critical'] %}
+          <option value="{{ p }}" {% if todo.priority == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <input type="text" name="title" value="{{ todo.title }}" required maxlength="500">
+    <textarea name="description" placeholder="description">{{ todo.description or '' }}</textarea>
+    <div><button type="submit" class="primary">save</button></div>
+  </form>
+</div>
+
+<div class="section">
+  <h2>Subtodos<span class="count">{{ subtodos | length }}</span></h2>
+  {% if subtodos %}
+    <ul class="todo-tree">
+      {% for t in subtodos %}{{ m.todo_node(t, human_identity, project.id) }}{% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No subtodos.</p>
+  {% endif %}
+
+  <div class="add-row">
+    <form method="post"
+          action="/web/todos/{{ todo.id }}/subtodos"
+          hx-post="/web/todos/{{ todo.id }}/subtodos"
+          hx-target=".todo-tree"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()"
+          class="inline">
+      <input type="text" name="title" placeholder="+ new subtodo" required maxlength="500">
+      <select name="priority">
+        <option value="low">low</option>
+        <option value="medium" selected>medium</option>
+        <option value="high">high</option>
+        <option value="critical">critical</option>
+      </select>
+      <button type="submit">add</button>
+    </form>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Notes<span class="count">{{ notes | length }}</span></h2>
+  <div class="notes-log" id="notes-log">
+    {% for n in notes %}
+      <div class="note-entry">
+        <div class="note-meta">{{ n.author }} · {{ n.created_at[:16] | replace('T', ' ') }}</div>
+        <div class="note-content">{{ n.content }}</div>
+      </div>
+    {% endfor %}
+    {% if not notes %}<p class="muted">No notes yet.</p>{% endif %}
+  </div>
+
+  <div class="add-row">
+    <form method="post"
+          action="/web/todos/{{ todo.id }}/notes"
+          hx-post="/web/todos/{{ todo.id }}/notes"
+          hx-target="#notes-log"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()"
+          class="inline stack">
+      <textarea name="content" placeholder="add a note — what was tried, learned, decided" required></textarea>
+      <div><button type="submit" class="primary">add note</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

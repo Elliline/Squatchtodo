@@ -1,0 +1,5 @@
+{# Single note entry for HTMX append after add-note form submission. #}
+<div class="note-entry">
+  <div class="note-meta">{{ note.author }} · {{ note.created_at[:16] | replace('T', ' ') }}</div>
+  <div class="note-content">{{ note.content }}</div>
+</div>

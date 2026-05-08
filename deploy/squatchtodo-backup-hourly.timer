@@ -1,0 +1,14 @@
+[Unit]
+Description=Run squatchtodo-backup-hourly every hour
+Documentation=file:///opt/squatchtodo/deploy/backup-hourly.sh
+
+[Timer]
+OnCalendar=hourly
+# If the box was off when a tick was due, run on next boot.
+Persistent=true
+# Spread out simultaneous starts on a busy fleet.
+RandomizedDelaySec=120
+Unit=squatchtodo-backup-hourly.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SquatchTodo{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230c0e10'/><rect x='4' y='4' width='8' height='8' fill='%235cc2b3'/></svg>">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <a href="/" class="brand"><span class="dot"></span>SquatchTodo</a>
+    <nav>
+      <a href="/" {% if active_nav == 'projects' %}class="active"{% endif %}>Projects</a>
+      <a href="/?status=archived" {% if active_nav == 'archived' %}class="active"{% endif %}>Archived</a>
+    </nav>
+    <form class="search" action="/search" method="get">
+      <input type="search" name="q" value="{{ search_query | default('') }}" placeholder="search…" autocomplete="off">
+      <button type="submit">go</button>
+    </form>
+  </header>
+
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

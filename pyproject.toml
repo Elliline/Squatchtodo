@@ -1,0 +1,40 @@
+[project]
+name = "squatchtodo"
+version = "0.1.0"
+description = "Self-hosted MCP-accessible todo and project tracking system."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Ellie Morgana" }]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.12",
+    "mcp>=1.2",
+    "tomli>=2.0; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[project.scripts]
+squatchtodo = "squatchtodo.main:main"
+squatchtodo-migrate = "squatchtodo.db:cli_migrate"
+squatchtodo-bootstrap = "scripts.bootstrap:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["squatchtodo*"]
+
+[tool.setuptools.package-data]
+squatchtodo = ["migrations/*.sql", "templates/**/*.html", "static/**/*"]

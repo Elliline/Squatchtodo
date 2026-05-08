@@ -1,0 +1,52 @@
+# SNH ↔ SquatchTodo client configuration
+#
+# Drop this snippet into the [tools.*] section of an SNH instance's config so
+# the node can read and write shared todo state. Every SNH on the aqueduct
+# fleet should point at the same SquatchTodo server (Halo) — that's what
+# makes context portable between Claude API sessions, claude.ai, Sparky's
+# coder, and the SNH instances themselves.
+#
+# This file is an *example*. Copy the [tools.squatchtodo] block into the
+# real SNH config (typically /etc/snh/config.toml) and edit the values
+# below for the node it's running on.
+
+[tools.squatchtodo]
+
+# Toggle for the integration as a whole. Set to false to mute the tool
+# without removing the config block (useful when Halo is being rebuilt).
+enabled = true
+
+# SquatchTodo MCP endpoint.
+#
+# Halo runs the server on port 3100 by default. Pick the URL that matches
+# how this SNH instance reaches Halo:
+#
+#   url = "http://127.0.0.1:3100/mcp"   # SNH co-resident on Halo
+#   url = "http://halo.local:3100/mcp"  # mDNS — works inside the LAN
+#   url = "http://halo:3100/mcp"        # if /etc/hosts has a halo entry
+#   url = "http://10.0.1.10:3100/mcp"   # static IP fallback
+#
+# v2 will switch to https through a Cloudflare tunnel — no LAN reach
+# required — and add a token. For now this is local-network only.
+url = "http://halo.local:3100/mcp"
+
+# Identity registered with the server on each request. Used as the
+# `created_by` / `author` value on every project, todo, and note this SNH
+# instance writes, and shown in the web UI's bot tag.
+#
+# Use the node's hostname-style nickname so attribution lines up with how
+# the rest of the fleet refers to nodes:
+#
+#   identity = "halo"      # Halo's SNH
+#   identity = "tabby"     # Tabby's SNH
+#   identity = "sparky"    # Sparky's coder
+#   identity = "dev-snh"   # local dev SNH instance
+#
+# The server passes this through unchanged — no validation in v1 (local
+# network only). v2 will require a per-identity token.
+identity = "halo"
+
+# Optional: timeouts for the MCP transport. Defaults are reasonable; tune
+# only if you see spurious cancellations on slow searches over big indexes.
+# request_timeout_seconds = 30
+# connect_timeout_seconds = 5

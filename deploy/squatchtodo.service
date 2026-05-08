@@ -1,0 +1,61 @@
+[Unit]
+Description=SquatchTodo — shared todo / project tracking server
+Documentation=file:///opt/squatchtodo/PROJECT.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=squatchtodo
+Group=squatchtodo
+WorkingDirectory=/opt/squatchtodo
+
+# Read config from /etc; bind/port/log_level overridable via SQUATCHTODO_* env.
+ExecStart=/opt/squatchtodo/.venv/bin/squatchtodo --config /etc/squatchtodo/config.toml
+
+# Restart policy: a SQLite-backed local service should bounce immediately on
+# failure rather than waiting for an external orchestrator.
+Restart=on-failure
+RestartSec=3
+
+# journalctl is the canonical log destination per PROJECT.md.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=squatchtodo
+
+# Sandbox: deny everything except the data directory + ephemeral /tmp.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+MemoryDenyWriteExecute=yes
+PrivateUsers=yes
+CapabilityBoundingSet=
+
+# Only the SQLite directory is writable. WAL/SHM sidecar files live next to
+# the .db file, so a single ReadWritePaths line covers them.
+ReadWritePaths=/var/lib/squatchtodo
+
+# Resource ceilings to keep a runaway tool call from eating the box.
+LimitNOFILE=4096
+TasksMax=128
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

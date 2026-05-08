@@ -1,0 +1,33 @@
+[Unit]
+Description=SquatchTodo weekly Datto offsite sync
+Documentation=file:///opt/squatchtodo/deploy/backup-weekly.sh
+After=network-online.target squatchtodo-backup-daily.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=squatchtodo
+Group=squatchtodo
+ExecStart=/opt/squatchtodo/deploy/backup-weekly.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=squatchtodo-backup
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=
+ReadWritePaths=/var/lib/squatchtodo

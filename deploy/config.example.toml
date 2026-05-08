@@ -1,0 +1,32 @@
+# /etc/squatchtodo/config.toml
+#
+# All sections are optional — a missing file or missing keys fall back to
+# defaults that are safe for a fresh Halo install (localhost-only, MCP on).
+#
+# Settings can also be overridden via SQUATCHTODO_* environment variables —
+# useful for one-off systemd drop-ins (e.g. SQUATCHTODO_LOG_LEVEL=DEBUG).
+
+log_level = "INFO"
+
+[server]
+# Default: localhost only. To expose on the LAN to other aqueduct nodes,
+# set bind_address = "0.0.0.0" and rely on the firewall + Tailscale to limit
+# reach. v2 will add token auth and Cloudflare Tunnel exposure.
+bind_address = "127.0.0.1"
+port = 3100
+
+[database]
+# /var/lib/squatchtodo is provisioned as a btrfs subvolume by install.sh so
+# snapshots are independent of the rest of /var.
+path = "/var/lib/squatchtodo/squatchtodo.db"
+
+[identity]
+# The human user. Items with a different created_by render with a small
+# bot-tag in the web UI so AI activity is visually distinct.
+default = "ellie"
+header_name = "X-Squatchtodo-Identity"
+
+[mcp]
+# Set to false to run as REST + web only (e.g. for a maintenance window
+# or while debugging tool behaviour).
+enabled = true

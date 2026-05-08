@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% import "partials/_macros.html" as m %}
+{% block title %}{% if query %}{{ query }} · {% endif %}Search · SquatchTodo{% endblock %}
+
+{% block content %}
+<div class="section">
+  <h2>Search{% if query %}<span class="count">{{ total }}</span>{% endif %}</h2>
+
+  <form action="/search" method="get" class="inline" style="max-width: 600px">
+    <input type="search" name="q" value="{{ query }}" placeholder="search projects, todos, notes" autofocus>
+    <button type="submit" class="primary">search</button>
+  </form>
+</div>
+
+{% if query %}
+  <div class="search-section">
+    <h2><span class="label">Projects</span><span class="count">{{ results.projects | length }}</span></h2>
+    {% if results.projects %}
+      <table class="dense">
+        <tbody>
+          {% for p in results.projects %}
+          <tr>
+            <td><a href="/projects/{{ p.id }}" class="bright">{{ p.name }}</a>
+              {% if p.description %}<div class="muted">{{ p.description | truncate(160) }}</div>{% endif %}
+            </td>
+            <td>{{ m.project_status(p.status) }}</td>
+            <td>{{ m.tags(p.tags) }}</td>
+            <td>{{ m.bot_tag(p.created_by, human_identity) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="search-empty">no project hits</div>
+    {% endif %}
+  </div>
+
+  <div class="search-section">
+    <h2><span class="label">Todos</span><span class="count">{{ results.todos | length }}</span></h2>
+    {% if results.todos %}
+      <table class="dense">
+        <tbody>
+          {% for t in results.todos %}
+          <tr>
+            <td><a href="/todos/{{ t.id }}" class="bright">{{ t.title }}</a>
+              {% if t.description %}<div class="muted">{{ t.description | truncate(160) }}</div>{% endif %}
+            </td>
+            <td>{{ m.todo_status(t.status) }}</td>
+            <td>{{ m.todo_priority(t.priority) }}</td>
+            <td>{{ m.bot_tag(t.created_by, human_identity) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="search-empty">no todo hits</div>
+    {% endif %}
+  </div>
+
+  <div class="search-section">
+    <h2><span class="label">Notes</span><span class="count">{{ results.notes | length }}</span></h2>
+    {% if results.notes %}
+      <div class="notes-log">
+        {% for n in results.notes %}
+          <div class="note-entry">
+            <div class="note-meta">{{ n.author }} · {{ n.created_at[:16] | replace('T', ' ') }} · <a href="/todos/{{ n.todo_id }}">view todo</a></div>
+            <div class="note-content">{{ n.content }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="search-empty">no note hits</div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

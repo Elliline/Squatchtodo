@@ -1,0 +1,73 @@
+{# Shared template helpers. Imported with `import` so they're available as
+   functions inside other templates without reaching for global state. #}
+
+{% macro short_ts(iso) %}
+  {%- if iso -%}
+    {{- iso[:10] -}} <span class="muted">{{ iso[11:16] }}</span>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro ago(iso) %}
+  {# Caller pre-computes "x ago" via render_ago in web.py and passes it in;
+     this macro is the fallback when only a raw timestamp is at hand. #}
+  {%- if iso -%}
+    {{ iso[:10] }}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro tags(tag_list) %}
+  {%- for t in tag_list -%}
+    <span class="tag">{{ t }}</span>
+  {%- endfor -%}
+{% endmacro %}
+
+{% macro bot_tag(created_by, human_identity) %}
+  {%- if created_by != human_identity -%}
+    <span class="bot-tag" title="created by {{ created_by }}">{{ created_by }}</span>
+  {%- endif -%}
+{% endmacro %}
+
+{% macro project_status(status) %}
+  <span class="tag status-{{ status }}">{{ status }}</span>
+{% endmacro %}
+
+{% macro todo_status(status) %}
+  <span class="tag todo-status-{{ status }}">{{ status }}</span>
+{% endmacro %}
+
+{% macro todo_priority(priority) %}
+  <span class="tag priority-{{ priority }}">{{ priority }}</span>
+{% endmacro %}
+
+{# Render a single todo node, recursing into subtodos. The ``human_identity``
+   arg is used to flag AI-created items. ``project_id`` is needed so the
+   "+ subtodo" form posts to the right URL. #}
+{% macro todo_node(t, human_identity, project_id) %}
+  <li>
+    <div class="todo-row {% if t.status == 'done' %}done{% endif %}" data-todo-id="{{ t.id }}" id="todo-{{ t.id }}">
+      <span class="checkbox"
+            hx-post="/web/todos/{{ t.id }}/toggle"
+            hx-target="#todo-{{ t.id }}"
+            hx-swap="outerHTML"
+            title="toggle done">
+        {% if t.status == 'done' %}✓{% else %}&nbsp;{% endif %}
+      </span>
+      <span class="title">
+        <a href="/todos/{{ t.id }}">{{ t.title }}</a>
+        {{ bot_tag(t.created_by, human_identity) }}
+      </span>
+      <span class="row-actions">
+        {{ todo_priority(t.priority) }}
+        {{ todo_status(t.status) }}
+        <span class="timestamp" title="{{ t.created_at }}">{{ t.created_at[:10] }}</span>
+      </span>
+    </div>
+    {% if t.subtodos %}
+      <ul>
+        {% for child in t.subtodos %}
+          {{ todo_node(child, human_identity, project_id) }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{% endmacro %}

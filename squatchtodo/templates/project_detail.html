@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "partials/_macros.html" as m %}
+{% block title %}{{ project.name }} · SquatchTodo{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="/">projects</a> / <span class="bright">{{ project.name }}</span>
+</div>
+
+<div class="entity-header">
+  <div class="title">{{ project.name }}</div>
+  <div class="meta">
+    {{ m.project_status(project.status) }}
+    {{ m.tags(project.tags) }}
+    <span class="kv"><span class="k">created</span><span class="v">{{ project.created_at[:10] }}</span></span>
+    <span class="kv"><span class="k">by</span><span class="v">{{ project.created_by }}</span></span>
+    <span class="kv"><span class="k">updated</span><span class="v">{{ project.updated_at[:10] }}</span></span>
+  </div>
+  <div class="description {% if not project.description %}empty{% endif %}">
+    {%- if project.description -%}{{ project.description }}{%- else -%}no description{%- endif -%}
+  </div>
+
+  <form method="post" action="/web/projects/{{ project.id }}/status" class="inline" style="margin-top:8px">
+    <span class="kv"><span class="k">set status</span></span>
+    <select name="status" onchange="this.form.submit()">
+      <option value="active" {% if project.status == 'active' %}selected{% endif %}>active</option>
+      <option value="paused" {% if project.status == 'paused' %}selected{% endif %}>paused</option>
+      <option value="archived" {% if project.status == 'archived' %}selected{% endif %}>archived</option>
+    </select>
+  </form>
+</div>
+
+<div class="section">
+  <h2>Todos<span class="count">{{ todo_count }}</span></h2>
+
+  {% if todo_tree %}
+    <ul class="todo-tree">
+      {% for t in todo_tree %}
+        {{ m.todo_node(t, human_identity, project.id) }}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No todos yet.</p>
+  {% endif %}
+
+  <div class="add-row">
+    <form method="post"
+          action="/web/projects/{{ project.id }}/todos"
+          hx-post="/web/projects/{{ project.id }}/todos"
+          hx-target=".todo-tree"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()"
+          class="inline">
+      <input type="text" name="title" placeholder="+ new todo" required maxlength="500">
+      <select name="priority">
+        <option value="low">low</option>
+        <option value="medium" selected>medium</option>
+        <option value="high">high</option>
+        <option value="critical">critical</option>
+      </select>
+      <button type="submit">add</button>
+    </form>
+  </div>
+</div>
+
+{% if recent_notes %}
+<div class="section">
+  <h2>Recent notes<span class="count">{{ recent_notes | length }}</span></h2>
+  <div class="notes-log">
+    {% for entry in recent_notes %}
+      <div class="note-entry">
+        <div class="note-meta">
+          <a href="/todos/{{ entry.todo_id }}">{{ entry.todo_title }}</a>
+          · {{ entry.note.author }}
+          · {{ entry.note.created_at[:16] | replace('T', ' ') }}
+        </div>
+        <div class="note-content">{{ entry.note.content }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% import "partials/_macros.html" as m %}
+{% block title %}Projects · SquatchTodo{% endblock %}
+
+{% block content %}
+<div class="section">
+  <h2>
+    {% if status_filter == 'archived' %}Archived projects{% else %}Active projects{% endif %}
+    <span class="count">{{ projects | length }}</span>
+  </h2>
+
+  {% if projects %}
+  <table class="dense">
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Status</th>
+        <th>Tags</th>
+        <th>Todos (open / wip / blk / done)</th>
+        <th>Updated</th>
+        <th>By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in projects %}
+      <tr>
+        <td><a href="/projects/{{ p.id }}" class="bright">{{ p.name }}</a>
+          {% if p.description %}<div class="muted">{{ p.description | truncate(100) }}</div>{% endif %}
+        </td>
+        <td>{{ m.project_status(p.status) }}</td>
+        <td>{{ m.tags(p.tags) }}</td>
+        <td class="num">
+          <span class="counts">
+            <span class="{% if counts[p.id]['open'] %}has{% endif %}">{{ counts[p.id]['open'] }}</span> /
+            <span class="{% if counts[p.id]['in_progress'] %}has{% endif %}">{{ counts[p.id]['in_progress'] }}</span> /
+            <span class="{% if counts[p.id]['blocked'] %}has{% endif %}">{{ counts[p.id]['blocked'] }}</span> /
+            <span class="{% if counts[p.id]['done'] %}has{% endif %}">{{ counts[p.id]['done'] }}</span>
+          </span>
+        </td>
+        <td class="timestamp">{{ p.updated_at[:10] }}</td>
+        <td>{{ m.bot_tag(p.created_by, human_identity) }}{% if p.created_by == human_identity %}<span class="muted">{{ p.created_by }}</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No {{ status_filter or 'active' }} projects.</p>
+  {% endif %}
+</div>
+
+{% if status_filter != 'archived' %}
+<div class="section">
+  <h2>New project</h2>
+  <form method="post" action="/web/projects" class="inline stack">
+    <input type="text" name="name" placeholder="project name" required maxlength="200">
+    <input type="text" name="tags" placeholder="tags (comma-separated)" maxlength="200">
+    <textarea name="description" placeholder="description (optional)"></textarea>
+    <div>
+      <button type="submit" class="primary">create</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Run squatchtodo-backup-daily every day
+Documentation=file:///opt/squatchtodo/deploy/backup-daily.sh
+
+[Timer]
+# 03:30 local — quiet hour, well after the last hourly of the previous day.
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=300
+Unit=squatchtodo-backup-daily.service
+
+[Install]
+WantedBy=timers.target

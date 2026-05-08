@@ -1,0 +1,14 @@
+[Unit]
+Description=Run squatchtodo-backup-weekly every Sunday
+Documentation=file:///opt/squatchtodo/deploy/backup-weekly.sh
+
+[Timer]
+# Sunday 04:30 local. After the daily NAS sync (03:30) so the offsite copy
+# reflects the freshest mirror.
+OnCalendar=Sun *-*-* 04:30:00
+Persistent=true
+RandomizedDelaySec=600
+Unit=squatchtodo-backup-weekly.service
+
+[Install]
+WantedBy=timers.target

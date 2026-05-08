@@ -1,0 +1,4 @@
+{# Render a single todo node (with its subtodos) for HTMX swaps. Used when an
+   add-todo form posts and we want to append just the new node to the tree. #}
+{% import "partials/_macros.html" as m %}
+{{ m.todo_node(t, human_identity, project_id) }}
