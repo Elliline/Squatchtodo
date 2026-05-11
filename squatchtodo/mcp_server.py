@@ -90,12 +90,19 @@ def build_mcp_server(config: Config) -> Any:
     (or older Python versions) can import this module without exploding.
     """
     from mcp.server.fastmcp import FastMCP  # local import; mcp requires 3.10+
+    from mcp.server.transport_security import TransportSecuritySettings
 
     # streamable_http_path="/" because we mount the resulting Starlette app at
     # "/mcp" of the parent FastAPI. Starlette's Mount strips the "/mcp" prefix
     # before dispatching, so the inner Route's path is what's left — set it to
     # "/" so a request to "/mcp/" lands on the route. With the default of
     # "/mcp", clients would have to hit "/mcp/mcp" to reach the endpoint.
+    #
+    # transport_security disables FastMCP's DNS rebinding protection. FastMCP
+    # auto-enables it whenever ``host`` is loopback (the default), which 421s
+    # any request whose Host header isn't 127.0.0.1/localhost — including LAN
+    # access from other fleet machines. SquatchTodo is local-network-only by
+    # design (PROJECT.md), so DNS rebinding isn't a relevant threat model.
     server = FastMCP(
         "squatchtodo",
         instructions=(
@@ -106,6 +113,9 @@ def build_mcp_server(config: Config) -> Any:
             "to 'archived' to retire them."
         ),
         streamable_http_path="/",
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+        ),
     )
 
     @contextmanager
