@@ -20,6 +20,14 @@ Lifespan
 session manager. FastAPI does not auto-drive the lifespan of mounted ASGI
 apps, so the FastAPI lifespan in ``api.py`` enters
 ``mcp_server.session_manager.run()`` itself.
+
+Mount path
+----------
+The MCP server is built with ``streamable_http_path="/"`` and mounted at
+``/mcp``. Starlette's ``Mount`` strips the mount prefix before dispatch, so
+the inner route's path is what's left after ``/mcp``. With the default
+``streamable_http_path="/mcp"`` you'd have to hit ``/mcp/mcp`` to reach the
+endpoint; with ``"/"`` the canonical ``/mcp/`` URL works.
 """
 
 from __future__ import annotations
@@ -83,6 +91,11 @@ def build_mcp_server(config: Config) -> Any:
     """
     from mcp.server.fastmcp import FastMCP  # local import; mcp requires 3.10+
 
+    # streamable_http_path="/" because we mount the resulting Starlette app at
+    # "/mcp" of the parent FastAPI. Starlette's Mount strips the "/mcp" prefix
+    # before dispatching, so the inner Route's path is what's left — set it to
+    # "/" so a request to "/mcp/" lands on the route. With the default of
+    # "/mcp", clients would have to hit "/mcp/mcp" to reach the endpoint.
     server = FastMCP(
         "squatchtodo",
         instructions=(
@@ -92,6 +105,7 @@ def build_mcp_server(config: Config) -> Any:
             "complete_todo / add_note. Items are never hard-deleted — set status "
             "to 'archived' to retire them."
         ),
+        streamable_http_path="/",
     )
 
     @contextmanager
